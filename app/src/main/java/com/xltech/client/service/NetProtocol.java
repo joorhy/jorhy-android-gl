@@ -251,58 +251,62 @@ public class NetProtocol {
                         new InetSocketAddress(DataServerInfo.getInstance().getAddress(),
                                 DataServerInfo.getInstance().getPort()));
                 socketChannel.configureBlocking(false);
-                SelectionKey key = socketChannel.register(selector,
-                        SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 while (!isStop) {
-                    int nReadyChannels = selector.select();
+                   int nReadyChannels = selector.select();
                     if (nReadyChannels == 0) {
                         continue;
                     }
 
-                    if (key.isReadable()) {
-                        while (dataProtocol.getHeaderBuffer().hasRemaining()) {
-                            socketChannel.read(dataProtocol.getHeaderBuffer());
-                        }
-
-                        ByteBuffer bodyBuffer = ByteBuffer.allocate(dataProtocol.getBodyLen() +
-                                EnumProtocol.TAIL_LEN);
-                        while (bodyBuffer.hasRemaining()) {
-                            socketChannel.read(bodyBuffer);
-                        }
-
-                        processData(dataProtocol, bodyBuffer);
-                        dataProtocol.getHeaderBuffer().clear();
-                    } else if (key.isWritable()) {
-                        Object task;
-                        synchronized (taskQueue) {
-                            if (taskQueue.size() == 0) {
-                                continue;
-                            }
-                            task = taskQueue.poll();
-                        }
-
-                        if (task != null) {
-                            byte[] sendData = null;
-                            if (task.getClass() == DataLogin.class) {
-                                sendData = DataProtocol.MakeRequest(EnumProtocol.xl_login,
-                                        EnumProtocol.xl_ctrl_start, sequenceNum++,
-                                        DataLogin.getInstance().getBody(),
-                                        DataLogin.getInstance().getBodyLen());
-                            } else if (task.getClass() == DataNull.class) {
-                                DataNull dataNull = (DataNull)task;
-                                sendData = DataProtocol.MakeRequest(dataNull.getCommand(),
-                                        EnumProtocol.xl_ctrl_start, sequenceNum++, null, 0);
-                            } else if (task.getClass() == DataRealPlay.class) {
-                                DataRealPlay realPlay = (DataRealPlay)task;
-                                sendData = DataProtocol.MakeRequest(EnumProtocol.xl_real_play,
-                                        realPlay.getFlag(), realPlay.getSequence(),
-                                        realPlay.getBody(), realPlay.getBodyLen());
+                    Set selectedKeys = selector.selectedKeys();
+                    Iterator keyIterator = selectedKeys.iterator();
+                    while (keyIterator.hasNext()) {
+                        SelectionKey key = (SelectionKey)keyIterator.next();
+                        if (key.isReadable()) {
+                            while (dataProtocol.getHeaderBuffer().hasRemaining()) {
+                                socketChannel.read(dataProtocol.getHeaderBuffer());
                             }
 
-                            if (sendData != null) {
-                                socketChannel.write(ByteBuffer.wrap(sendData));
+                            ByteBuffer bodyBuffer = ByteBuffer.allocate(dataProtocol.getBodyLen() +
+                                    EnumProtocol.TAIL_LEN);
+                            while (bodyBuffer.hasRemaining()) {
+                                socketChannel.read(bodyBuffer);
+                            }
+
+                            processData(dataProtocol, bodyBuffer);
+                            dataProtocol.getHeaderBuffer().clear();
+                        } else if (key.isWritable()) {
+                            Object task = null;
+                            synchronized (taskQueue) {
+                                if (taskQueue.size() != 0) {
+                                    task = taskQueue.poll();
+                                }
+                            }
+
+                            if (task != null) {
+                                ByteBuffer sendData = null;
+                                if (task.getClass() == DataLogin.class) {
+                                    sendData = DataProtocol.MakeRequest(EnumProtocol.xl_login,
+                                            EnumProtocol.xl_ctrl_start, sequenceNum++,
+                                            DataLogin.getInstance().getBody(),
+                                            DataLogin.getInstance().getBodyLen());
+                                } else if (task.getClass() == DataNull.class) {
+                                    DataNull dataNull = (DataNull) task;
+                                    sendData = DataProtocol.MakeRequest(dataNull.getCommand(),
+                                            EnumProtocol.xl_ctrl_start, sequenceNum++, null, 0);
+                                } else if (task.getClass() == DataRealPlay.class) {
+                                    DataRealPlay realPlay = (DataRealPlay) task;
+                                    sendData = DataProtocol.MakeRequest(EnumProtocol.xl_real_play,
+                                            realPlay.getFlag(), realPlay.getSequence(),
+                                            realPlay.getBody(), realPlay.getBodyLen());
+                                }
+
+                                if (sendData != null) {
+                                    socketChannel.write(sendData);
+                                }
                             }
                         }
+                        keyIterator.remove();
                     }
                 }
             } catch(IOException e){

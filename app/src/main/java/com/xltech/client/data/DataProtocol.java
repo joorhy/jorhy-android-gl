@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
 public class DataProtocol {
     private ByteBuffer headerBuffer = null;
 
-    static public byte[] MakeRequest(byte cmd, byte flag, int nSeq, byte[] data, int len) {
+    static public ByteBuffer MakeRequest(byte cmd, byte flag, int nSeq, byte[] data, int len) {
         int nLen = EnumProtocol.HEADER_LEN + len + EnumProtocol.TAIL_LEN;
         ByteBuffer result = ByteBuffer.allocate(nLen);
         result.order(ByteOrder.LITTLE_ENDIAN);
@@ -35,7 +35,8 @@ public class DataProtocol {
         /// 结束码
         result.put((byte)0xFE);
 
-        return result.array();
+        result.flip();
+        return result;
     }
 
     static public byte CheckNum(byte[] data) {
