@@ -13,6 +13,6 @@ public class Configer {
     }
 
     static public String GetAddr() {
-        return "222.214.218.237";
+        return "192.168.1.10";
     }
 }

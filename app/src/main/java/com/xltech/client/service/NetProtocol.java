@@ -241,11 +241,6 @@ public class NetProtocol {
     }
 
     private class WorkThread extends Thread {
-        static final int READ_HEAD_STATUS = 0;
-        static final int READ_BODY_STATUS = 1;
-
-        private int readStatus = READ_HEAD_STATUS;
-
         @Override
         public void run() {
             try {
@@ -265,22 +260,18 @@ public class NetProtocol {
                     }
 
                     if (key.isReadable()) {
-                        if (readStatus == READ_HEAD_STATUS) {
-                            while (dataProtocol.getHeaderBuffer().hasRemaining()) {
-                                socketChannel.read(dataProtocol.getHeaderBuffer());
-                            }
-                            readStatus = READ_BODY_STATUS;
-                        } else {
-                            ByteBuffer bodyBuffer = ByteBuffer.allocate(dataProtocol.getBodyLen() +
-                                    EnumProtocol.TAIL_LEN);
-                            while (bodyBuffer.hasRemaining()) {
-                                socketChannel.read(bodyBuffer);
-                            }
-                            readStatus = READ_HEAD_STATUS;
-
-                            processData(dataProtocol, bodyBuffer);
-                            dataProtocol.getHeaderBuffer().clear();
+                        while (dataProtocol.getHeaderBuffer().hasRemaining()) {
+                            socketChannel.read(dataProtocol.getHeaderBuffer());
                         }
+
+                        ByteBuffer bodyBuffer = ByteBuffer.allocate(dataProtocol.getBodyLen() +
+                                EnumProtocol.TAIL_LEN);
+                        while (bodyBuffer.hasRemaining()) {
+                            socketChannel.read(bodyBuffer);
+                        }
+
+                        processData(dataProtocol, bodyBuffer);
+                        dataProtocol.getHeaderBuffer().clear();
                     } else if (key.isWritable()) {
                         Object task;
                         synchronized (taskQueue) {
