@@ -1,29 +1,28 @@
 package com.xltech.client.data;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by JooLiu on 2016/1/11.
  */
 public class DataProtocol {
-    private ByteBuffer dataBuffer = null;
-    public DataProtocol(ByteBuffer buffer, int len) {
-        dataBuffer = ByteBuffer.wrap(buffer.array(), 0, len);
-    }
+    private ByteBuffer headerBuffer = null;
 
     static public byte[] MakeRequest(byte cmd, byte flag, int nSeq, byte[] data, int len) {
-        int nLen = 12 + len + 2;
+        int nLen = EnumProtocol.HEADER_LEN + len + EnumProtocol.TAIL_LEN;
         ByteBuffer result = ByteBuffer.allocate(nLen);
+        result.order(ByteOrder.LITTLE_ENDIAN);
         /// 开始码
-        result.put((byte)0xFF);
+        result.put((byte) 0xFF);
         /// 协议类型
         result.put(EnumProtocol.xl_frame_request);
         /// 序列号
         result.putInt(nSeq);
-        /// 媒体数据类型
-        result.put(flag);
         /// 指令类型
         result.put(cmd);
+        /// 状态码 0x0表示开始, 0x1传输中, 0x2传输完成
+        result.put(flag);
         /// 数据长度
         result.putInt(len);
 
@@ -46,8 +45,15 @@ public class DataProtocol {
                 nCheckNum += data[i];
             }
         }
-
         return (byte)(nCheckNum % 256);
+    }
+
+    public DataProtocol() {
+        headerBuffer = ByteBuffer.allocate(EnumProtocol.HEADER_LEN);
+    }
+
+    public ByteBuffer getHeaderBuffer() {
+        return headerBuffer;
     }
 
     public boolean isCorrect() {
@@ -55,23 +61,20 @@ public class DataProtocol {
     }
 
     public byte getCommand() {
-        return dataBuffer.get(7);
+        return headerBuffer.get(EnumProtocol.COMMAND_OFFSET);
     }
 
     public byte getFlag() {
-        return dataBuffer.get(6);
+        return headerBuffer.get(EnumProtocol.FLAG_OFFSET);
     }
 
-    public int getSeq() {
-        return dataBuffer.getInt(2);
+    public int getSequence() {
+        headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        return headerBuffer.getInt(EnumProtocol.SEQUENCE_OFFSET);
     }
 
     public int getBodyLen() {
-        return dataBuffer.getInt(8);
-    }
-
-    public byte[] getBody() {
-        ByteBuffer result  = ByteBuffer.wrap(dataBuffer.array(), 13, getBodyLen());
-        return result.array();
+        headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        return headerBuffer.getInt(EnumProtocol.BODY_OFFSET);
     }
 }

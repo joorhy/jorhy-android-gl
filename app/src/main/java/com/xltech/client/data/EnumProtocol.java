@@ -6,6 +6,10 @@ package com.xltech.client.data;
 public class EnumProtocol {
     public static final int HEADER_LEN = 12;
     public static final int TAIL_LEN = 2;
+    public static final int COMMAND_OFFSET = 6;
+    public static final int FLAG_OFFSET = 7;
+    public static final int SEQUENCE_OFFSET = 2;
+    public static final int BODY_OFFSET = 8;
     /// 协议类型
     public static final byte xl_frame_message = 0;
     public static final byte xl_frame_request = 1;

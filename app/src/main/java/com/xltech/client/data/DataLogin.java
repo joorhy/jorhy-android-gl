@@ -1,12 +1,16 @@
 package com.xltech.client.data;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by JooLiu on 2016/1/11.
  */
 public class DataLogin {
-    private final int LOGIN_LEN = 40;
+    private final int LOGIN_LEN = 40;            ///< 16 + 16 + 4 + 4
+    private final int PASSWORD_OFFSET = 16;
+    private final int FLAG_OFFSET = 32;
+    private final int VERSION_OFFSET = 36;
     private static DataLogin instance = null;
 
     private String strUsername = null;           ///< 账户名
@@ -45,17 +49,17 @@ public class DataLogin {
     }
 
     public byte[] getBody() {
-        int nBodyLen = 16 + 16 + 4 + 4;
-        ByteBuffer result = ByteBuffer.allocate(nBodyLen);
+        ByteBuffer result = ByteBuffer.allocate(LOGIN_LEN);
+        result.order(ByteOrder.LITTLE_ENDIAN);
 
         result.put(strUsername.getBytes());
-        result.position(16);
+        result.position(PASSWORD_OFFSET);
 
         result.put(strPassword.getBytes());
-        result.position(32);
+        result.position(FLAG_OFFSET);
 
         result.putInt(nForced);
-        result.position(36);
+        result.position(VERSION_OFFSET);
 
         result.putInt(nVersion);
 
@@ -64,6 +68,7 @@ public class DataLogin {
 
     public void setBody(byte[] body) {
         ByteBuffer result = ByteBuffer.wrap(body);
+        result.order(ByteOrder.LITTLE_ENDIAN);
         nResult = result.getInt();
     }
 }

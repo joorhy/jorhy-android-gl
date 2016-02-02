@@ -5,6 +5,14 @@ package com.xltech.client.config;
  */
 public class Configer {
     static public boolean UseTemp() {
-        return true;
+        return false;
+    }
+
+    static public boolean UserXunlitech() {
+        return false;
+    }
+
+    static public String GetAddr() {
+        return "222.214.218.237";
     }
 }
