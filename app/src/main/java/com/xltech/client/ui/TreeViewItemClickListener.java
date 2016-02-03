@@ -4,18 +4,20 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.AdapterView;  
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.xltech.client.config.ConfigTempData;
 import com.xltech.client.config.Configer;
+import com.xltech.client.data.DataCategory;
 import com.xltech.client.data.DataElement;
 import com.xltech.client.data.DataSelectedVehicle;
 import com.xltech.client.service.ManActivitys;
 
 public class TreeViewItemClickListener implements OnItemClickListener {
-    private TreeViewAdapter treeViewAdapter;  
+    private TreeViewAdapter treeViewAdapter;
       
     public TreeViewItemClickListener(TreeViewAdapter treeViewAdapter) {  
         this.treeViewAdapter = treeViewAdapter;  
@@ -26,15 +28,10 @@ public class TreeViewItemClickListener implements OnItemClickListener {
         DataElement element = (DataElement) treeViewAdapter.getItem(position);
         ArrayList<DataElement> elements = treeViewAdapter.getElements();
         ArrayList<DataElement> elementsData = treeViewAdapter.getElementsData();
-          
-        if (!element.isHasChildren()) {
-            if (Configer.UseTemp()) {
-                DataSelectedVehicle.getInstance().setSelectedVehicle(
-                        ConfigTempData.getInstance().getVehicleId(),
-                        ConfigTempData.getInstance().getTotalChannels());
-            } else {
 
-            }
+        if (!element.hasChildren()) {
+            DataSelectedVehicle.getInstance().setSelectedVehicle(
+                    element.getId(), element.getChannels());
 
             Activity currentActivity = ManActivitys.getInstance().currentActivity();
             if (currentActivity.getClass() == ActivityImage.class) {
@@ -45,31 +42,78 @@ public class TreeViewItemClickListener implements OnItemClickListener {
                 ((ActivityPlayer)currentActivity).HidePopupWindow();
             }
 
-            return;  
-        }  
-          
-        if (element.isExpanded()) {  
-            element.setExpanded(false);  
+            return;
+        }
+
+        if (element.isExpanded()) {
+            element.setExpanded(false);
             ArrayList<DataElement> elementsToDel = new ArrayList<DataElement>();
-            for (int i = position + 1; i < elements.size(); i++) {  
-                if (element.getLevel() >= elements.get(i).getLevel())  
-                    break;  
-                elementsToDel.add(elements.get(i));  
-            }  
-            elements.removeAll(elementsToDel);  
-            treeViewAdapter.notifyDataSetChanged();  
-        } else if (element.isOnline()){
-            element.setExpanded(true);  
+            for (int i = position + 1; i < elements.size(); i++) {
+                if (element.getLevel() >= elements.get(i).getLevel())
+                    break;
+                elementsToDel.add(elements.get(i));
+            }
+            elements.removeAll(elementsToDel);
+            treeViewAdapter.notifyDataSetChanged();
+        } else {
+            element.setExpanded(true);
             int i = 1;
             for (DataElement e : elementsData) {
-                if (e.getParendId().equals(element.getId())) {
-                    e.setExpanded(false);  
-                    elements.add(position + i, e);  
-                    i ++;  
-                }  
-            }  
-            treeViewAdapter.notifyDataSetChanged();  
-        }  
-    }  
-  
+                if (e.getParentId().equals(element.getId())) {
+                    if(DataCategory.getInstance().isShowAll()){
+                        e.setExpanded(false);
+                        elements.add(position + i, e);
+                        i++;
+                    } else {
+                        if (e.isOnline()) {
+                            e.setExpanded(false);
+                            elements.add(position + i, e);
+                            i++;
+                        }
+                    }
+                }
+            }
+            treeViewAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void refreshItems() {
+        ArrayList<DataElement> elements = treeViewAdapter.getElements();
+        ArrayList<DataElement> elementsData = treeViewAdapter.getElementsData();
+
+        ArrayList<DataElement> elementsToRefresh = new ArrayList<DataElement>();
+        for (DataElement e : elements) {
+            if (e.isExpanded() && e.getLevel() != (DataElement.TOP_LEVEL + 2))
+            elementsToRefresh.add(e);
+        }
+
+
+        for (DataElement element : elementsToRefresh) {
+            int i = 1;
+            int position = elements.indexOf(element);
+            for (DataElement e : elementsData) {
+                if (e.getParentId().equals(element.getId())) {
+                    if (DataCategory.getInstance().isShowAll()) {
+                        if (elements.indexOf(e) == -1) {
+                            elements.add(position + i, e);
+                        }
+
+                    } else {
+                        if (e.isOnline()) {
+                            if (elements.indexOf(e) == -1) {
+                                elements.add(position + i, e);
+                            }
+                        } else {
+                            if (elements.indexOf(e) != -1) {
+                                elements.remove(e);
+                                i--;
+                            }
+                        }
+                    }
+                    i++;
+                }
+            }
+        }
+        treeViewAdapter.notifyDataSetChanged();
+    }
 }  

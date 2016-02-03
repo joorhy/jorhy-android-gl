@@ -4,27 +4,40 @@ public class DataElement {
     private String contentText;  
     private int level;  
     private String id;
-    private String parendId;
+    private String parentId;
     private boolean hasChildren;  
     private boolean isExpanded;
-    private boolean isSelected;
+    private int channels;
     private boolean isOnline;
       
     public static final String NO_PARENT = "";
     public static final int TOP_LEVEL = 0;  
       
-    public DataElement(String contentText, int level, String id, String parendId,
-            boolean hasChildren, boolean isExpanded) {  
+    public DataElement(int level, String contentText, String id, int channels, boolean isOnline,
+                       String parentId) {
         super();  
         this.contentText = contentText;  
         this.level = level;  
         this.id = id;  
-        this.parendId = parendId;  
-        this.hasChildren = hasChildren;  
+        this.parentId = parentId;
+        this.hasChildren = false;
+        this.isExpanded = false;
+        this.channels = channels;
+        this.isOnline = isOnline;
+    }
+
+    public DataElement(int level, String contentText, String id,
+                       String parentId, boolean isExpanded) {
+        super();
+        this.contentText = contentText;
+        this.level = level;
+        this.id = id;
+        this.parentId = parentId;
+        this.hasChildren = true;
         this.isExpanded = isExpanded;
-        this.isSelected = false;
+        this.channels = 0;
         this.isOnline = true;
-    }  
+    }
   
     public boolean isExpanded() {  
         return isExpanded;  
@@ -34,12 +47,8 @@ public class DataElement {
         this.isExpanded = isExpanded;  
     }
 
-    public boolean isSelected() {
-        return isSelected;
-    }
-
-    public void setSelected(boolean isSelected) {
-        this.isSelected = isSelected;
+    public int getChannels () {
+        return channels;
     }
 
     public boolean isOnline() {
@@ -74,15 +83,15 @@ public class DataElement {
         this.id = id;  
     }  
   
-    public String getParendId() {
-        return parendId;  
+    public String getParentId() {
+        return parentId;
     }  
   
     public void setParendId(String parendId) {
-        this.parendId = parendId;  
+        this.parentId = parendId;
     }
 
-    public boolean isHasChildren() {  
+    public boolean hasChildren() {
         return hasChildren;  
     }  
   

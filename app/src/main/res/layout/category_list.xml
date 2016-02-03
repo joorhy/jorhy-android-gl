@@ -20,12 +20,14 @@
             android:layout_height="match_parent"
             android:layout_weight="6" />
         <TextView
+            android:id="@+id/list_all"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="全部"
             android:gravity="center"/>
         <TextView
+            android:id="@+id/list_online"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

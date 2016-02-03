@@ -55,9 +55,6 @@ public class PopupCategory extends PopupWindow{
         treeView.setAdapter(treeViewAdapter);
         treeView.setOnItemClickListener(treeViewItemClickListener);
 
-        CategoryRequest loginRequest = new CategoryRequest();
-        loginRequest.execute("");
-
         TextView btnBack = (TextView) contentView.findViewById(R.id.list_back);
         btnBack.setOnClickListener(new TextView.OnClickListener() {
             @Override
@@ -66,14 +63,35 @@ public class PopupCategory extends PopupWindow{
             }
         });
 
+        TextView btnAll = (TextView) contentView.findViewById(R.id.list_all);
+        btnAll.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DataCategory.getInstance().showAll(true);
+                refreshPopupWindow();
+
+            }
+        });
+
+        TextView btnOnline = (TextView) contentView.findViewById(R.id.list_online);
+        btnOnline.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DataCategory.getInstance().showAll(false);
+                refreshPopupWindow();
+            }
+        });
+
         TextView btnExit = (TextView) contentView.findViewById(R.id.exit);
         btnExit.setOnClickListener(new TextView.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LogoutRequest loginRequest = new LogoutRequest();
-                loginRequest.execute("");
+            NetProtocol.getInstance().Logout();
+            ManActivitys.getInstance().popAllActivityExceptOne();
             }
         });
+
+        NetProtocol.getInstance().GetCategory();
     }
 
     public void showPopupWindow(View parent) {
@@ -84,49 +102,8 @@ public class PopupCategory extends PopupWindow{
         }
     }
 
-    class CategoryRequest extends AsyncTask<String, Integer, String> {
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            NetProtocol.getInstance().GetCategory();
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... progresses) {
-
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-        }
-    }
-
-    class LogoutRequest extends AsyncTask<String, Integer, String> {
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            NetProtocol.getInstance().Logout();
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... progresses) {
-            Log.i("", "onProgressUpdate(Progress... progresses) called");
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            ManActivitys.getInstance().popAllActivityExceptOne();
-            //System.exit(0);
-        }
+    public void refreshPopupWindow() {
+        ListView treeView = (ListView) contentView.findViewById(R.id.tree_list);
+        ((TreeViewItemClickListener)treeView.getOnItemClickListener()).refreshItems();
     }
 }

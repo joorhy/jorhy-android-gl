@@ -7,12 +7,4 @@ public class Configer {
     static public boolean UseTemp() {
         return false;
     }
-
-    static public boolean UserXunlitech() {
-        return false;
-    }
-
-    static public String GetAddr() {
-        return "192.168.1.10";
-    }
 }

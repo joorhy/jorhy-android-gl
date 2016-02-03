@@ -3,12 +3,14 @@ package com.xltech.client.data;
 import com.xltech.client.service.AppPlayer;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by JooLiu on 2016/2/1.
  */
 public class DataRealPlay {
     private final int REAL_PLAY_LEN = 40;
+    private final int CHANNEL_OFFSET = 32;
     private String strHostID;		            ///< 设备ID
     private long  channel;		                ///< 通道号
     private int sequence;
@@ -56,11 +58,12 @@ public class DataRealPlay {
     }
 
     public byte[] getBody() {
-        int nBodyLen = 32 + 8;
+        int nBodyLen = REAL_PLAY_LEN;
         ByteBuffer result = ByteBuffer.allocate(nBodyLen);
+        result.order(ByteOrder.LITTLE_ENDIAN);
 
         result.put(strHostID.getBytes());
-        result.position(33);
+        result.position(CHANNEL_OFFSET);
         result.putLong(channel);
 
         return result.array();

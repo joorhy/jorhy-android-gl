@@ -26,13 +26,8 @@ public class ActivityLogin extends Activity {
                 EditText txtUser = (EditText) findViewById(R.id.username_edit);
                 EditText txtPassword = (EditText) findViewById(R.id.password_edit);
 
-                if(Configer.UserXunlitech()) {
-                    NetProtocol.getInstance().Login(Configer.GetAddr().toString(), 8059,
-                            txtUser.getText().toString(), txtPassword.getText().toString(), 1);
-                } else {
-                    NetProtocol.getInstance().Login(txtUser.getText().toString(), 8502,
-                            txtUser.getText().toString(), txtPassword.getText().toString(), 1);
-                }
+                NetProtocol.getInstance().Login(txtUser.getText().toString(), 8502,
+                        txtUser.getText().toString(), txtPassword.getText().toString(), 1);
             }
         });
         ManActivitys.getInstance().pushActivity(this);

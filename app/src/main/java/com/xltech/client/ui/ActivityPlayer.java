@@ -17,17 +17,11 @@ import com.xltech.client.service.ManActivitys;
  * Created by JooLiu on 2016/1/13.
  */
 public class ActivityPlayer extends Activity {
-    private final String PLAY = "play";
-    private final String STOP = "stop";
-    private final String REPLAY = "replay";
-
     private PopupCategory mPopupWindow = null;
     Point point = new Point();
 
     private AppPlayer playerLeft = null;
     private AppPlayer playerRight = null;
-
-    private boolean isReplay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +59,11 @@ public class ActivityPlayer extends Activity {
             public void onClick(View view) {
                 if (playerLeft != null && playerRight != null) {
                     if(DataSelectedVehicle.getInstance().nextChannel()) {
-                        PlayRequest request = new PlayRequest();
-                        request.execute(REPLAY);
+                        playerLeft.Stop();
+                        playerRight.Stop();
+
+                        playerLeft.Play();
+                        playerRight.Play();
                     }
                 }
             }
@@ -78,8 +75,11 @@ public class ActivityPlayer extends Activity {
             public void onClick(View view) {
                 if (playerLeft != null && playerRight != null) {
                     if (DataSelectedVehicle.getInstance().prevChannel()) {
-                        PlayRequest request = new PlayRequest();
-                        request.execute(REPLAY);
+                        playerLeft.Stop();
+                        playerRight.Stop();
+
+                        playerLeft.Play();
+                        playerRight.Play();
                     }
                 }
             }
@@ -97,8 +97,8 @@ public class ActivityPlayer extends Activity {
             playerRight = new AppPlayer((GLFrameSurface) findViewById(R.id.right_glsurface),
                     AppPlayer.RIGHT_PLAYER);
 
-            PlayRequest request = new PlayRequest();
-            request.execute(PLAY);
+            playerLeft.Play();
+            playerRight.Play();
         }
     }
 
@@ -110,8 +110,8 @@ public class ActivityPlayer extends Activity {
             playerLeft.Stop();
             playerRight.Stop();
 
-            playerLeft = null;
-            playerRight = null;
+            /*playerLeft = null;
+            playerRight = null;*/
         }
         ManActivitys.getInstance().popActivity(this);
     }
@@ -122,41 +122,7 @@ public class ActivityPlayer extends Activity {
         }
     }
 
-    class PlayRequest extends AsyncTask<String, Integer, String> {
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            String strParam = params[0];
-            if (strParam.equals(PLAY)) {
-                playerLeft.Play();
-                playerRight.Play();
-            } else if (strParam.equals(STOP)) {
-                playerLeft.Stop();
-                playerRight.Stop();
-            } else if (strParam.equals(REPLAY)) {
-                isReplay = true;
-                playerLeft.Stop();
-                playerRight.Stop();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... progresses) {
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            if (isReplay) {
-                isReplay = false;
-                PlayRequest request = new PlayRequest();
-                request.execute(PLAY);
-            }
-        }
+    public void RefreshPopupWindow() {
+        mPopupWindow.refreshPopupWindow();
     }
 }

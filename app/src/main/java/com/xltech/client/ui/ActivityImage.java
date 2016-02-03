@@ -76,6 +76,10 @@ public class ActivityImage extends Activity {
         }
     }
 
+    public void RefreshPopupWindow() {
+        mPopupWindow.refreshPopupWindow();
+    }
+
     private void ShowPicture() {
         String strLeftPicture = ManPictures.getInstance().getPictureName(AppPlayer.LEFT_PALER);
         if (strLeftPicture != null) {

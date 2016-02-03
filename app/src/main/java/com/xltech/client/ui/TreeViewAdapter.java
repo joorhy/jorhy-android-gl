@@ -49,7 +49,7 @@ public class TreeViewAdapter extends BaseAdapter {
   
     @Override  
     public View getView(int position, View convertView, ViewGroup parent) {  
-        ViewHolder holder = null;
+        ViewHolder holder;
         if (convertView == null) {  
             holder = new ViewHolder();
             convertView = inflater.inflate(R.layout.treeview_item, null);
@@ -68,22 +68,14 @@ public class TreeViewAdapter extends BaseAdapter {
                 holder.disclosureImg.getPaddingBottom());
 
         holder.contentText.setText(element.getContentText());
-        if (element.isHasChildren() && !element.isExpanded()) {
-            if (element.isOnline()) {
-                holder.disclosureImg.setImageResource(R.drawable.close);
-            } else {
-                holder.disclosureImg.setImageResource(R.drawable.offline);
-            }
+        if (element.hasChildren() && !element.isExpanded()) {
+            holder.disclosureImg.setImageResource(R.drawable.close);
             holder.disclosureImg.setVisibility(View.VISIBLE);
-        } else if (element.isHasChildren() && element.isExpanded()) {
-            if (element.isOnline()) {
-                holder.disclosureImg.setImageResource(R.drawable.open);
-            } else {
-                holder.disclosureImg.setImageResource(R.drawable.offline);
-            }
+        } else if (element.hasChildren() && element.isExpanded()) {
+            holder.disclosureImg.setImageResource(R.drawable.open);
             holder.disclosureImg.setVisibility(View.VISIBLE);
-        } else if (!element.isHasChildren()) {
-            holder.disclosureImg.setImageResource(R.drawable.camera);
+        } else if (!element.hasChildren()) {
+            holder.disclosureImg.setImageDrawable(null);
             holder.disclosureImg.setVisibility(View.VISIBLE);
         }
         return convertView;

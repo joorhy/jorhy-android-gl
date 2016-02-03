@@ -1,7 +1,6 @@
 package com.xltech.client.service;
 
 import android.app.Activity;
-import android.provider.ContactsContract;
 
 import com.xltech.client.config.Configer;
 import com.xltech.client.config.ConfigTempData;
@@ -9,11 +8,7 @@ import com.xltech.client.data.*;
 import com.xltech.client.ui.ActivityLogin;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -35,6 +30,7 @@ public class NetProtocol {
     private boolean isStop = false;
     private int sequenceNum = 0;
     private Thread workThread = null;
+    private long lastBeatTime = 0;
 
     /// for test
     private Thread testThread = null;
@@ -95,14 +91,15 @@ public class NetProtocol {
     }
 
     public int GetCategory() {
+        DataCategory.getInstance().cleanElement();
+        DataCategory.getInstance().cleanBody();
         if (Configer.UseTemp()) {
-            DataCategory.getInstance().cleanElement();
-            DataCategory.getInstance().cleanBody();
             DataCategory.getInstance().setBody(ConfigTempData.getCategoryData());
             DataCategory.getInstance().parse();
         } else {
             DataNull category = new DataNull();
             category.setCommand(EnumProtocol.xl_category);
+            category.setSequence(sequenceNum++);
             synchronized (taskQueue) {
                 taskQueue.offer(category);
             }
@@ -120,8 +117,15 @@ public class NetProtocol {
                 strKey = String.valueOf(DataSelectedVehicle.getInstance().getRightChannel());
             }
 
+            DataRealPlay realPlay = new DataRealPlay();
+            realPlay.setPlayer(player);
+            realPlay.setStrHostID();
+            realPlay.setChannel();
+            realPlay.setSequence(0);
+            realPlay.setFlag(EnumProtocol.xl_ctrl_start);
+
             synchronized(playerMap) {
-                playerMap.put(strKey, player);
+                playerMap.put(strKey, realPlay);
             }
 
             if (testThread == null) {
@@ -134,10 +138,14 @@ public class NetProtocol {
                             if (testFrameData != null) {
                                 int channel = testFrameData.getChannel(StructBlock.VOD);
                                 synchronized(playerMap) {
-                                    AppPlayer val = (AppPlayer)playerMap.get(String.valueOf(channel));
-                                    if (val != null) {
-                                        val.InputData(testFrameData.blockData(),
-                                                testFrameData.blockSize());
+                                    String strKey = String.valueOf(channel);
+                                    DataRealPlay realPlayer = (DataRealPlay) playerMap.get(strKey);
+                                    if (realPlayer != null) {
+                                        AppPlayer player = realPlayer.getPlayer();
+                                        if (player != null) {
+                                            player.InputData(testFrameData.blockData(),
+                                                    testFrameData.blockSize());
+                                        }
                                     }
                                 }
                             }
@@ -148,6 +156,7 @@ public class NetProtocol {
             }
         } else {
             int sequence = sequenceNum++;
+            strKey = String.valueOf(sequence);
             DataRealPlay realPlay = new DataRealPlay();
             realPlay.setPlayer(player);
             realPlay.setStrHostID();
@@ -156,7 +165,7 @@ public class NetProtocol {
             realPlay.setFlag(EnumProtocol.xl_ctrl_start);
 
             synchronized(playerMap) {
-                playerMap.put(String.valueOf(sequence), realPlay);
+                playerMap.put(strKey, realPlay);
             }
 
             synchronized (taskQueue) {
@@ -198,6 +207,18 @@ public class NetProtocol {
         return 0;
     }
 
+    private void Heartbeat() {
+        if (System.currentTimeMillis() - lastBeatTime > 1000) {
+            lastBeatTime = System.currentTimeMillis();
+            DataNull heartBeat = new DataNull();
+            heartBeat.setCommand(EnumProtocol.xl_heart_beat);
+            heartBeat.setSequence(0);
+            synchronized (taskQueue) {
+                taskQueue.offer(heartBeat);
+            }
+        }
+    }
+
     private void processData(DataProtocol dataProtocol, ByteBuffer bodyBuffer) {
         if (!dataProtocol.isCorrect()) {
             return;
@@ -224,17 +245,25 @@ public class NetProtocol {
                 }
                 break;
             case EnumProtocol.xl_category:
-                if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_data) {
+                if (dataProtocol.getBodyLen() > 0) {
                     DataCategory.getInstance().setBody(bodyBuffer.array());
-                } else if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_end) {
+                }
+                if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_end) {
                     DataCategory.getInstance().parse();
                 }
                 break;
             case EnumProtocol.xl_real_play:
-                String strKey = String.valueOf(dataProtocol.getSequence());
-                AppPlayer player = ((DataRealPlay)playerMap.get(strKey)).getPlayer();
-                if (player != null) {
-                    player.InputData(bodyBuffer.array(), dataProtocol.getBodyLen());
+                synchronized(playerMap) {
+                    String strKey = String.valueOf(dataProtocol.getSequence());
+                    AppPlayer player = ((DataRealPlay) playerMap.get(strKey)).getPlayer();
+                    if (player != null) {
+                        if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_data) {
+                            player.InputData(bodyBuffer.array(), dataProtocol.getBodyLen());
+                        } else if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_end ||
+                                dataProtocol.getFlag() == EnumProtocol.xl_ctrl_stop) {
+                            playerMap.remove(player.GetKey());
+                        }
+                    }
                 }
                 break;
         }
@@ -253,6 +282,7 @@ public class NetProtocol {
                 socketChannel.configureBlocking(false);
                 socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 while (!isStop) {
+                   Heartbeat();
                    int nReadyChannels = selector.select();
                     if (nReadyChannels == 0) {
                         continue;
@@ -293,7 +323,8 @@ public class NetProtocol {
                                 } else if (task.getClass() == DataNull.class) {
                                     DataNull dataNull = (DataNull) task;
                                     sendData = DataProtocol.MakeRequest(dataNull.getCommand(),
-                                            EnumProtocol.xl_ctrl_start, sequenceNum++, null, 0);
+                                            EnumProtocol.xl_ctrl_start, dataNull.getSequence(),
+                                            null, 0);
                                 } else if (task.getClass() == DataRealPlay.class) {
                                     DataRealPlay realPlay = (DataRealPlay) task;
                                     sendData = DataProtocol.MakeRequest(EnumProtocol.xl_real_play,

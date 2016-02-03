@@ -57,18 +57,25 @@ public class ConfigTempData {
     }
 
     public static byte[] getCategoryData() {
-        String strTempCategory = "{\"id\":\"1\",\"name\":\"成都铁路局\"," +
-                "\"items\":[" +
-                "{\"id\":\"11\",\"name\":\"列车1\",\"items\":[" +
-                "{\"id\":\"111\",\"name\":\"通道1\",\"items\":[]}," +
-                "{\"id\":\"112\",\"name\":\"通道2\",\"items\":[]}," +
-                "{\"id\":\"113\",\"name\":\"通道3\",\"items\":[]}," +
-                "{\"id\":\"114\",\"name\":\"通道4\",\"items\":[]}," +
-                "{\"id\":\"115\",\"name\":\"通道5\",\"items\":[]}," +
-                "{\"id\":\"116\",\"name\":\"通道6\",\"items\":[]}]}," +
-                "{\"id\":\"12\",\"name\":\"列车2\"," +
-                "\"items\":[]}," +
-                "{\"id\":\"13\",\"name\":\"列车3\",\"items\":[]}]}";
+        String strTempCategory =
+                "{\"id\":\"1\",\"name\":\"成都大机运用检修段\",\"items\":[" +
+                        "{\"id\":\"11\",\"name\":\"大机线路二车间\",\"items\":[" +
+                        "{\"id\":\"111\",\"name\":\"14540\",\"channels\":8,\"online\":true}," +
+                        "{\"id\":\"112\",\"name\":\"14541\",\"channels\":8,\"online\":true}," +
+                        "{\"id\":\"113\",\"name\":\"14542\",\"channels\":9,\"online\":true}]}," +
+                        "{\"id\":\"12\",\"name\":\"道岔维修车间\",\"items\":[" +
+                        "{\"id\":\"121\",\"name\":\"14323\",\"channels\":1,\"online\":true}," +
+                        "{\"id\":\"122\",\"name\":\"14324\",\"channels\":2,\"online\":false}," +
+                        "{\"id\":\"123\",\"name\":\"14325\",\"channels\":3,\"online\":true}]}," +
+                        "{\"id\":\"13\",\"name\":\"大机线路一车间\",\"items\":[" +
+                        "{\"id\":\"131\",\"name\":\"18921\",\"channels\":4,\"online\":true}," +
+                        "{\"id\":\"132\",\"name\":\"18922\",\"channels\":5,\"online\":false}," +
+                        "{\"id\":\"133\",\"name\":\"18923\",\"channels\":6,\"online\":true}]}," +
+                        "{\"id\":\"14\",\"name\":\"综合车间\",\"items\":[" +
+                        "{\"id\":\"141\",\"name\":\"11234\",\"channels\":7,\"online\":true}," +
+                        "{\"id\":\"142\",\"name\":\"11235\",\"channels\":9,\"online\":true}," +
+                        "{\"id\":\"143\",\"name\":\"11236\",\"channels\":6,\"online\":true}]}" +
+                "]}";
 
         byte[] tempCategory = null;
         try {

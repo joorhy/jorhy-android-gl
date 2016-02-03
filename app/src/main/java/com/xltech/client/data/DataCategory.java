@@ -1,5 +1,11 @@
 package com.xltech.client.data;
 
+import android.app.Activity;
+
+import com.xltech.client.service.ManActivitys;
+import com.xltech.client.ui.ActivityImage;
+import com.xltech.client.ui.ActivityPlayer;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +25,7 @@ public class DataCategory {
     public ArrayList<DataElement> m_elementsData = null;
 
     private ByteBuffer bodyBuffer = null;
+    private boolean isShowAll = true;
 
     public static DataCategory getInstance() {
         if (instance == null) {
@@ -32,6 +39,14 @@ public class DataCategory {
         bodyBuffer = ByteBuffer.allocate(1024 * 100);
         m_elements = new ArrayList<DataElement>();
         m_elementsData = new ArrayList<DataElement>();
+    }
+
+    public void showAll(boolean isShowAll) {
+        this.isShowAll = isShowAll;
+    }
+
+    public boolean isShowAll() {
+        return isShowAll;
     }
 
     public void cleanElement() {
@@ -62,8 +77,8 @@ public class DataCategory {
             JSONObject jsonObject = (JSONObject) jsonParser.nextValue();
             String strIdRoot = jsonObject.getString("id");
             String strNameRoot = jsonObject.getString("name");
-            DataElement elementRoot = new DataElement(strNameRoot, DataElement.TOP_LEVEL, strIdRoot,
-                    DataElement.NO_PARENT, true, false);
+            DataElement elementRoot = new DataElement(DataElement.TOP_LEVEL, strNameRoot, strIdRoot,
+                   DataElement.NO_PARENT, true);
             m_elements.add(elementRoot);
 
             JSONArray itemsArray = jsonObject.getJSONArray("items");
@@ -71,19 +86,28 @@ public class DataCategory {
                 JSONObject item = (JSONObject) itemsArray.opt(i);
                 String strIdLevel_1 = item.getString("id");
                 String strNameLevel_1 = item.getString("name");
-                DataElement elementLevel_1 = new DataElement(strNameLevel_1,
-                        DataElement.TOP_LEVEL + 1, strIdLevel_1, strIdRoot, true, false);
+                DataElement elementLevel_1 = new DataElement(DataElement.TOP_LEVEL + 1,
+                        strNameLevel_1, strIdLevel_1, strIdRoot, false);
                 m_elementsData.add(elementLevel_1);
 
-                JSONArray itemsCamera = jsonObject.getJSONArray("items");
-                for (int j=0; j<itemsCamera.length(); j++) {
-                    JSONObject itemCamera = (JSONObject) itemsArray.opt(j);
-                    String strIdLevel_2 = itemCamera.getString("id");
-                    String strNameLevel_2 = itemCamera.getString("name");
-                    DataElement elementLevel_2 = new DataElement(strNameLevel_2,
-                            DataElement.TOP_LEVEL + 2, strIdLevel_2, strIdLevel_1, false, false);
+                JSONArray itemsVehicleArray = item.getJSONArray("items");
+                for (int j=0; j<itemsVehicleArray.length(); j++) {
+                    JSONObject itemVehicle = (JSONObject) itemsVehicleArray.opt(j);
+                    String strIdLevel_2 = itemVehicle.getString("id");
+                    String strNameLevel_2 = itemVehicle.getString("name");
+                    int nChannels = itemVehicle.getInt("channels");
+                    boolean isOnline = itemVehicle.getBoolean("online");
+                    DataElement elementLevel_2 = new DataElement(DataElement.TOP_LEVEL + 2,
+                            strNameLevel_2, strIdLevel_2, nChannels, isOnline, strIdLevel_1);
                     m_elementsData.add(elementLevel_2);
                 }
+            }
+
+            Activity activity = ManActivitys.getInstance().currentActivity();
+            if (activity.getClass() == ActivityImage.class) {
+                ((ActivityImage)activity).RefreshPopupWindow();
+            } else if(activity.getClass() == ActivityPlayer.class) {
+                ((ActivityPlayer)activity).RefreshPopupWindow();
             }
         } catch (JSONException e) {
             e.printStackTrace();
