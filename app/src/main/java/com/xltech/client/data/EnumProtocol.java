@@ -31,7 +31,7 @@ public class EnumProtocol {
     public static final byte  xl_login = 0x52;					///< 用户登录
     public static final byte xl_logout = 0x53;					///< 注销登录
     //获取资源目录
-    public static final byte xl_category = 0x54;                ///< 资源目录
+    public static final byte xl_category = 0x59;                ///< 资源目录
     //实时报警
     public static final byte xl_vehicle_status = 0x60;			///< 实时报警信息使能
     public static final byte xl_alarm_info = 0x61;				///< 实时报警信息使能

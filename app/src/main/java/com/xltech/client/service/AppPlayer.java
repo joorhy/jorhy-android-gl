@@ -72,6 +72,11 @@ public class AppPlayer {
         return true;
     }
 
+    public boolean Restart() {
+        NetProtocol.getInstance().StopReal(this);
+        m_strKey = NetProtocol.getInstance().StartReal(this);
+        return true;
+    }
 
     public void Shot() {
         m_GLFRenderer.takeShot();

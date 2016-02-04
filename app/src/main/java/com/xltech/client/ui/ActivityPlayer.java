@@ -59,11 +59,8 @@ public class ActivityPlayer extends Activity {
             public void onClick(View view) {
                 if (playerLeft != null && playerRight != null) {
                     if(DataSelectedVehicle.getInstance().nextChannel()) {
-                        playerLeft.Stop();
-                        playerRight.Stop();
-
-                        playerLeft.Play();
-                        playerRight.Play();
+                        playerLeft.Restart();
+                        playerRight.Restart();
                     }
                 }
             }
@@ -75,11 +72,8 @@ public class ActivityPlayer extends Activity {
             public void onClick(View view) {
                 if (playerLeft != null && playerRight != null) {
                     if (DataSelectedVehicle.getInstance().prevChannel()) {
-                        playerLeft.Stop();
-                        playerRight.Stop();
-
-                        playerLeft.Play();
-                        playerRight.Play();
+                        playerLeft.Restart();
+                        playerRight.Restart();
                     }
                 }
             }

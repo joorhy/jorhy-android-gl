@@ -195,6 +195,7 @@ public class NetProtocol {
             DataRealPlay realPlay;
             synchronized (playerMap) {
                 realPlay = (DataRealPlay)playerMap.get(player.GetKey());
+                playerMap.remove(player.GetKey());
             }
 
             if (realPlay != null) {
@@ -255,13 +256,16 @@ public class NetProtocol {
             case EnumProtocol.xl_real_play:
                 synchronized(playerMap) {
                     String strKey = String.valueOf(dataProtocol.getSequence());
-                    AppPlayer player = ((DataRealPlay) playerMap.get(strKey)).getPlayer();
-                    if (player != null) {
-                        if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_data) {
-                            player.InputData(bodyBuffer.array(), dataProtocol.getBodyLen());
-                        } else if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_end ||
+                    DataRealPlay dataRealPlay = (DataRealPlay) playerMap.get(strKey);
+                    if (dataRealPlay != null) {
+                        AppPlayer player = dataRealPlay.getPlayer();
+                        if (player != null) {
+                            if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_stream) {
+                                player.InputData(bodyBuffer.array(), dataProtocol.getBodyLen());
+                            } /*else if (dataProtocol.getFlag() == EnumProtocol.xl_ctrl_end ||
                                 dataProtocol.getFlag() == EnumProtocol.xl_ctrl_stop) {
                             playerMap.remove(player.GetKey());
+                        }*/
                         }
                     }
                 }
