@@ -42,11 +42,25 @@
         android:background="@drawable/login_bg_div">
 
         <TextView
-            android:id="@+id/login_user_input"
+            android:id="@+id/login_server_input"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="5dp"
+            android:text="@string/login_label_server"
+            style="@style/normalText"/>
+        <EditText
+            android:id="@+id/server_edit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/login_server_input"
+            android:singleLine="true"
+            android:text="192.168.0.111"
+            android:inputType="text"/>
+        <TextView
+            android:id="@+id/login_user_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/server_edit"
             android:text="@string/login_label_username"
             style="@style/normalText"/>
         <EditText
@@ -55,14 +69,13 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/login_user_input"
             android:singleLine="true"
-            android:text="192.168.0.111"
+            android:text="test1"
             android:inputType="text"/>
         <TextView
             android:id="@+id/login_password_input"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/username_edit"
-            android:layout_marginTop="3dp"
             android:text="@string/login_label_password"
             style="@style/normalText"/>
         <EditText
@@ -72,7 +85,7 @@
             android:layout_below="@id/login_password_input"
             android:password="true"
             android:singleLine="true"
-            android:text="000000"
+            android:text="test1"
             android:inputType="textPassword"
             />
 

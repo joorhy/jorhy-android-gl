@@ -16,13 +16,13 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="菜单"
+            android:text="@string/menu"
             android:gravity="center"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="8"
-            android:text="视频播放"
+            android:text="@string/real_video"
             android:gravity="center"/>
         <LinearLayout
             android:layout_width="0dp"
@@ -34,7 +34,7 @@
         android:layout_height="0dp"
         android:layout_weight="8"
         android:orientation="horizontal"
-        android:background="@drawable/category_bg">
+        android:background="@drawable/login_bg">
         <com.xltech.client.service.GLFrameSurface
             android:id = "@+id/left_glsurface"
             android:layout_width="0dp"
@@ -65,21 +65,21 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="3"
-            android:text="上一个"
+            android:text="@string/prev_video"
             android:gravity="center"/>
         <TextView
             android:id="@+id/player_shot"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="2"
-            android:text="标记"
+            android:text="@string/mark"
             android:gravity="center"/>
         <TextView
             android:id="@+id/player_next"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="3"
-            android:text="下一个"
+            android:text="@string/next_video"
             android:gravity="center"/>
         <LinearLayout
             android:layout_width="0dp"

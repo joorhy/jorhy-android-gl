@@ -1,9 +1,12 @@
 package com.xltech.client.ui;
 
 import com.xltech.client.service.ManActivitys;
+
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,6 +31,7 @@ public class PopupCategory extends PopupWindow{
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         contentView = inflater.inflate(R.layout.category_list, null);
+        contentView.setAlpha(0.95f);
 
         // 设置SelectPicPopupWindow的View
         this.setContentView(contentView);
@@ -63,22 +67,28 @@ public class PopupCategory extends PopupWindow{
             }
         });
 
-        TextView btnAll = (TextView) contentView.findViewById(R.id.list_all);
+        final TextView btnAll = (TextView) contentView.findViewById(R.id.list_all);
+        final TextView btnOnline = (TextView) contentView.findViewById(R.id.list_online);
+
         btnAll.setOnClickListener(new TextView.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 DataCategory.getInstance().showAll(true);
                 refreshPopupWindow();
-
+                view.setBackgroundResource(R.drawable.select);
+                btnOnline.setBackground(null);
             }
         });
 
-        TextView btnOnline = (TextView) contentView.findViewById(R.id.list_online);
         btnOnline.setOnClickListener(new TextView.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 DataCategory.getInstance().showAll(false);
                 refreshPopupWindow();
+                view.setBackgroundResource(R.drawable.select);
+                btnAll.setBackground(null);
             }
         });
 

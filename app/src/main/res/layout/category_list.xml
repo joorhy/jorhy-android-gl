@@ -7,13 +7,13 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/title_bg">
+        android:background="@drawable/popup_title_bg">
         <TextView
             android:id="@+id/list_back"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="返回"
+            android:text="@string/back"
             android:gravity="center"/>
         <LinearLayout
             android:layout_width="0dp"
@@ -24,14 +24,15 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="全部"
+            android:text="@string/all"
+            android:background="@drawable/select"
             android:gravity="center"/>
         <TextView
             android:id="@+id/list_online"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="在线"
+            android:text="@string/online"
             android:gravity="center"/>
         <LinearLayout
             android:layout_width="0dp"
@@ -57,31 +58,32 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:background="@drawable/bottom_bg">
+        android:background="@drawable/popup_bottom_bg">
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="标记列表"
+            android:text="@string/mark_list"
+            android:background="@drawable/select"
             android:gravity="center"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="用户管理"
+            android:text="@string/send_content"
             android:gravity="center"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="我"
+            android:text="@string/send_file"
             android:gravity="center"/>
         <TextView
             android:id="@+id/exit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="退出"
+            android:text="@string/exit"
             android:gravity="center"/>
     </LinearLayout>
 </LinearLayout>

@@ -23,10 +23,11 @@ public class ActivityLogin extends Activity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                EditText txtServer = (EditText)findViewById(R.id.server_edit);
                 EditText txtUser = (EditText) findViewById(R.id.username_edit);
                 EditText txtPassword = (EditText) findViewById(R.id.password_edit);
 
-                NetProtocol.getInstance().Login(txtUser.getText().toString(), 8502,
+                NetProtocol.getInstance().Login(txtServer.getText().toString(), 8502,
                         txtUser.getText().toString(), txtPassword.getText().toString(), 1);
             }
         });
