@@ -39,6 +39,7 @@ public class TreeViewItemClickListener implements OnItemClickListener {
                 Intent intent = new Intent(currentActivity, ActivityPlayer.class);
                 currentActivity.startActivity(intent);
             } else if (currentActivity.getClass() == ActivityPlayer.class) {
+                ((ActivityPlayer)currentActivity).Replay();
                 ((ActivityPlayer)currentActivity).HidePopupWindow();
             }
 

@@ -116,6 +116,13 @@ public class ActivityPlayer extends Activity {
         }
     }
 
+    public void Replay() {
+        if (playerLeft != null && playerRight != null) {
+            playerLeft.Restart();
+            playerRight.Restart();
+        }
+    }
+
     public void RefreshPopupWindow() {
         mPopupWindow.refreshPopupWindow();
     }

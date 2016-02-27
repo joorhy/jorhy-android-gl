@@ -5,6 +5,6 @@ package com.xltech.client.config;
  */
 public class Configer {
     static public boolean UseTemp() {
-        return true;
+        return false;
     }
 }
