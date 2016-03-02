@@ -276,15 +276,32 @@ public class NetProtocol {
     private class WorkThread extends Thread {
         @Override
         public void run() {
+
+            DataProtocol dataProtocol = new DataProtocol();
+            Selector selector = null;
+            SocketChannel socketChannel = null;
             try {
-                DataProtocol dataProtocol = new DataProtocol();
-                Selector selector = Selector.open();
-                SocketChannel socketChannel = SocketChannel.open();
-                socketChannel.connect(
+                selector = Selector.open();
+                socketChannel = SocketChannel.open();
+                if (!socketChannel.connect(
                         new InetSocketAddress(DataServerInfo.getInstance().getAddress(),
-                                DataServerInfo.getInstance().getPort()));
+                                DataServerInfo.getInstance().getPort()))) {
+                    Activity activity = ManActivitys.getInstance().currentActivity();
+                    if (activity.getClass() == ActivityLogin.class) {
+                        ((ActivityLogin)activity).OnLoginReturn();
+                    }
+                }
                 socketChannel.configureBlocking(false);
                 socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Activity activity = ManActivitys.getInstance().currentActivity();
+                if (activity.getClass() == ActivityLogin.class) {
+                    ((ActivityLogin)activity).OnLoginReturn();
+                }
+            }
+
+            try {
                 while (!isStop) {
                    Heartbeat();
                    int nReadyChannels = selector.select();
