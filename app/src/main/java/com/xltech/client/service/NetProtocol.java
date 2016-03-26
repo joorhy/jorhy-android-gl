@@ -281,18 +281,32 @@ public class NetProtocol {
             Selector selector = null;
             SocketChannel socketChannel = null;
             try {
-                selector = Selector.open();
                 socketChannel = SocketChannel.open();
-                if (!socketChannel.connect(
+                socketChannel.configureBlocking(false);
+                socketChannel.connect(
                         new InetSocketAddress(DataServerInfo.getInstance().getAddress(),
-                                DataServerInfo.getInstance().getPort()))) {
+                                DataServerInfo.getInstance().getPort()));
+
+                long startTime = System.currentTimeMillis();
+                while (!socketChannel.finishConnect()){
+                    if (System.currentTimeMillis() - startTime > 3000) {
+                        socketChannel.close();
+                        socketChannel = null;
+                        break;
+                    }
+                }
+                if (socketChannel == null) {
                     Activity activity = ManActivitys.getInstance().currentActivity();
                     if (activity.getClass() == ActivityLogin.class) {
                         ((ActivityLogin)activity).OnLoginReturn();
                     }
+
+                    isStop = true;
+                    workThread = null;
+                } else {
+                    selector = Selector.open();
+                    socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 }
-                socketChannel.configureBlocking(false);
-                socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
             } catch (IOException e) {
                 e.printStackTrace();
                 Activity activity = ManActivitys.getInstance().currentActivity();

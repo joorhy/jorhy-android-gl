@@ -63,6 +63,11 @@ public class ActivityImage extends Activity {
         ShowPicture();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
 
     @Override
     protected void onDestroy() {
