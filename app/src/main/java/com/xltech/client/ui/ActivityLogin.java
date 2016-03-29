@@ -1,61 +1,62 @@
 package com.xltech.client.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.*;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.xltech.client.config.Configer;
 import com.xltech.client.data.DataLogin;
-import com.xltech.client.service.ManActivitys;
+import com.xltech.client.data.EnumMessage;
 import com.xltech.client.service.NetProtocol;
 
 public class ActivityLogin extends Activity {
-    private Button btn = null;
-    private EditText txtServer = null;
+    private TextView txtUserLable = null;
+    private TextView txtPasswordLable = null;
+    private Button btnLogin = null;
     private EditText txtUser = null;
     private EditText txtPassword = null;
-    private Handler myHandler;
+    private TextView txtErrMessage = null;
+    private CheckBox cbForceSignIn = null;
+    public static Handler myHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        btn = (Button) findViewById(R.id.sign_in_button);
-        txtServer = (EditText) findViewById(R.id.server_edit);
+        Initialize();
+        txtUserLable = (TextView) findViewById(R.id.login_user_input);
+        txtPasswordLable = (TextView) findViewById(R.id.login_password_input);
+        btnLogin = (Button) findViewById(R.id.sign_in_button);
         txtUser = (EditText) findViewById(R.id.username_edit);
         txtPassword = (EditText) findViewById(R.id.password_edit);
-        btn.setOnClickListener(new View.OnClickListener() {
+        txtErrMessage = (TextView) findViewById(R.id.error_message_text);
+        cbForceSignIn = (CheckBox) findViewById(R.id.check_force_login);
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btn.setText("登陆中...");
-                txtServer = (EditText) findViewById(R.id.server_edit);
-                txtUser = (EditText) findViewById(R.id.username_edit);
-                txtPassword = (EditText) findViewById(R.id.password_edit);
-
+                btnLogin.setText("登陆中...");
+                txtErrMessage.setText("");
                 EnableLogin(false);
-                NetProtocol.getInstance().Login(txtServer.getText().toString(), 8502,
-                        txtUser.getText().toString(), txtPassword.getText().toString(), 1);
+                NetProtocol.getInstance().Login("222.214.218.237", 8502,
+                        txtUser.getText().toString(), txtPassword.getText().toString(),
+                        cbForceSignIn.isChecked() ? 1 : 0);
+                myHandler.postDelayed(runnable, 5000);
             }
         });
-        ManActivitys.getInstance().pushActivity(this);
 
         // 实例化一个handler
         myHandler = new Handler() {
             //接收到消息后处理
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case 1:
-                        btn.setText("登陆");
-                        EnableLogin(true);
+                    case EnumMessage.LOGIN_RETURN:
+                        OnLoginReturn();
                         break;
                 }
                 super.handleMessage(msg);
@@ -66,6 +67,10 @@ public class ActivityLogin extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        btnLogin.setText(R.string.login_label_sign_in);
+        EnableLogin(true);
+        NetProtocol.getInstance().Logout();
     }
 
     @Override
@@ -76,38 +81,48 @@ public class ActivityLogin extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //ManActivitys.getInstance().popActivity(this);
+    }
+
+    private void Initialize() {
+        btnLogin = null;
+        txtUser = null;
+        txtPassword = null;
+        txtErrMessage = null;
+        cbForceSignIn = null;
+        myHandler = null;
     }
 
     private void EnableLogin(boolean isEnable) {
-        btn.setClickable(isEnable);
-        txtServer.setEnabled(isEnable);
+        txtUserLable.setEnabled(isEnable);
+        txtPasswordLable.setEnabled(isEnable);
+        btnLogin.setEnabled(isEnable);
         txtUser.setEnabled(isEnable);
         txtPassword.setEnabled(isEnable);
+        cbForceSignIn.setEnabled(isEnable);
     }
 
-    public void OnLoginReturn() {
-        Message message = new Message();
-        message.what = 1;
-        //发送消息
-        ActivityLogin.this.myHandler.sendMessage(message);
-        //EnableLogin(true);
-        //btn.setText("登陆");
+    private void OnLoginReturn() {
+        myHandler.removeCallbacks(runnable);
         if (DataLogin.getInstance().getResult() == 0) {
             Intent intent = new Intent(this, ActivityImage.class);
             startActivity(intent);
         } else {
-            LayoutInflater layoutInflater = LayoutInflater.from(this);
-            View viewAddEmployee = layoutInflater.inflate(R.layout.notice_dialog, null);
-            TextView txt = (TextView)viewAddEmployee.findViewById(R.id.message);
-            txt.setText("登陆失败");
-
-            /*new AlertDialog.Builder(this).setTitle("错误：").setMessage("登陆失败").setPositiveButton("确定",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    }).show();*/
+            txtErrMessage.setText(R.string.login_error);
+            btnLogin.setText(R.string.login_label_sign_in);
+            EnableLogin(true);
         }
     }
+
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            //要做的事情
+            txtErrMessage.setText(R.string.login_timeout);
+            btnLogin.setText(R.string.login_label_sign_in);
+            EnableLogin(true);
+            NetProtocol.getInstance().Logout();
+            //myHandler.postDelayed(this, 5000);
+        }
+    };
 }

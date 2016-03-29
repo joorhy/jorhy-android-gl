@@ -52,10 +52,7 @@ public class NetProtocol {
     public int Login(String strAddress, int nPort, String strUsername, String strPassword, int nForced) {
         if (Configer.UseTemp()) {
             DataLogin.getInstance().setBody(ConfigTempData.getLoginData());
-            Activity activity = ManActivitys.getInstance().currentActivity();
-            if (activity.getClass() == ActivityLogin.class) {
-                ((ActivityLogin)activity).OnLoginReturn();
-            }
+            ManMessage.DispatchRetLoginMessage();
         } else {
             DataServerInfo.getInstance().setAddress(strAddress);
             DataServerInfo.getInstance().setPort(nPort);
@@ -84,6 +81,17 @@ public class NetProtocol {
             logout.setCommand(EnumProtocol.xl_logout);
             synchronized (taskQueue) {
                 taskQueue.offer(logout);
+            }
+
+            if (workThread != null) {
+                isStop = true;
+                try {
+                    workThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    workThread = null;
+                }
             }
         }
 
@@ -228,10 +236,7 @@ public class NetProtocol {
         switch (dataProtocol.getCommand()) {
             case EnumProtocol.xl_login:
                 DataLogin.getInstance().setBody(bodyBuffer.array());
-                Activity activity = ManActivitys.getInstance().currentActivity();
-                if (activity.getClass() == ActivityLogin.class) {
-                    ((ActivityLogin)activity).OnLoginReturn();
-                }
+                ManMessage.DispatchRetLoginMessage();
                 break;
             case EnumProtocol.xl_logout:
                 try {
@@ -296,10 +301,7 @@ public class NetProtocol {
                     }
                 }
                 if (socketChannel == null) {
-                    Activity activity = ManActivitys.getInstance().currentActivity();
-                    if (activity.getClass() == ActivityLogin.class) {
-                        ((ActivityLogin)activity).OnLoginReturn();
-                    }
+                    ManMessage.DispatchRetLoginMessage();
 
                     isStop = true;
                     workThread = null;
@@ -309,10 +311,7 @@ public class NetProtocol {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                Activity activity = ManActivitys.getInstance().currentActivity();
-                if (activity.getClass() == ActivityLogin.class) {
-                    ((ActivityLogin)activity).OnLoginReturn();
-                }
+                ManMessage.DispatchRetLoginMessage();
             }
 
             try {
@@ -328,8 +327,12 @@ public class NetProtocol {
                     while (keyIterator.hasNext()) {
                         SelectionKey key = (SelectionKey)keyIterator.next();
                         if (key.isReadable()) {
+                            int nReadLen;
                             while (dataProtocol.getHeaderBuffer().hasRemaining()) {
-                                socketChannel.read(dataProtocol.getHeaderBuffer());
+                                nReadLen = socketChannel.read(dataProtocol.getHeaderBuffer());
+                                if (nReadLen < 0) {
+                                    throw new IOException();
+                                }
                             }
 
                             ByteBuffer bodyBuffer = ByteBuffer.allocate(dataProtocol.getBodyLen() +
@@ -368,7 +371,11 @@ public class NetProtocol {
                                 }
 
                                 if (sendData != null) {
-                                    socketChannel.write(sendData);
+                                    int nWriteLen;
+                                    nWriteLen = socketChannel.write(sendData);
+                                    if (nWriteLen < 0) {
+                                        throw new IOException();
+                                    }
                                 }
                             }
                         }

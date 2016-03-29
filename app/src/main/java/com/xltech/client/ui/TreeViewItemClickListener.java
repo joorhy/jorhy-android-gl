@@ -3,18 +3,17 @@ package com.xltech.client.ui;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.AdapterView;  
 import android.widget.AdapterView.OnItemClickListener;
 
-import com.xltech.client.config.ConfigTempData;
-import com.xltech.client.config.Configer;
 import com.xltech.client.data.DataCategory;
 import com.xltech.client.data.DataElement;
 import com.xltech.client.data.DataSelectedVehicle;
-import com.xltech.client.service.ManActivitys;
+import com.xltech.client.service.ManMessage;
 
 public class TreeViewItemClickListener implements OnItemClickListener {
     private TreeViewAdapter treeViewAdapter;
@@ -33,14 +32,10 @@ public class TreeViewItemClickListener implements OnItemClickListener {
             DataSelectedVehicle.getInstance().setSelectedVehicle(
                     element.getId(), element.getChannels());
 
-            Activity currentActivity = ManActivitys.getInstance().currentActivity();
-            if (currentActivity.getClass() == ActivityImage.class) {
-                ((ActivityImage)currentActivity).HidePopupWindow();
-                Intent intent = new Intent(currentActivity, ActivityPlayer.class);
-                currentActivity.startActivity(intent);
-            } else if (currentActivity.getClass() == ActivityPlayer.class) {
-                ((ActivityPlayer)currentActivity).Replay();
-                ((ActivityPlayer)currentActivity).HidePopupWindow();
+            if (PopupCategory.parentName == ActivityImage.class.getName()) {
+                ManMessage.DispatchOpenVideoMessage();
+            } else if (PopupCategory.parentName == ActivityPlayer.class.getName()) {
+                ManMessage.DispatchChangeVideoMessage();
             }
 
             return;

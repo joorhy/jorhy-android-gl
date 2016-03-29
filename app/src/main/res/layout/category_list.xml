@@ -79,11 +79,10 @@
             android:text="@string/send_file"
             android:gravity="center"/>
         <TextView
-            android:id="@+id/exit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/exit"
+            android:text="@string/manage_image"
             android:gravity="center"/>
     </LinearLayout>
 </LinearLayout>

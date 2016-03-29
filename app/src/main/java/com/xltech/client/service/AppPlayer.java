@@ -24,6 +24,7 @@ public class AppPlayer {
 
     public AppPlayer(GLSurfaceView surface, String strFlag) {
         m_strFlag = strFlag;
+
         surface.setEGLContextClientVersion(2);
         m_GLFRenderer = new GLFrameRender(surface, strFlag);
         surface.setRenderer(m_GLFRenderer);

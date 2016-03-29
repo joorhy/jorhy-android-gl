@@ -1,13 +1,11 @@
 package com.xltech.client.ui;
 
-import com.xltech.client.service.ManActivitys;
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +15,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.xltech.client.data.DataCategory;
+import com.xltech.client.data.EnumMessage;
 import com.xltech.client.service.NetProtocol;
 
 
@@ -26,6 +25,8 @@ import com.xltech.client.service.NetProtocol;
 public class PopupCategory extends PopupWindow{
     private View contentView;
     public static TreeViewAdapter treeViewAdapter;
+    public static Handler myHandler = null;
+    public static String parentName = "";
 
     public PopupCategory(Context context, int width) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -70,12 +71,13 @@ public class PopupCategory extends PopupWindow{
         final TextView btnAll = (TextView) contentView.findViewById(R.id.list_all);
         final TextView btnOnline = (TextView) contentView.findViewById(R.id.list_online);
 
+        DataCategory.getInstance().showAll(true);
         btnAll.setOnClickListener(new TextView.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 DataCategory.getInstance().showAll(true);
-                refreshPopupWindow();
+                OnRefreshPopupWindow();
                 view.setBackgroundResource(R.drawable.select);
                 btnOnline.setBackground(null);
             }
@@ -86,33 +88,35 @@ public class PopupCategory extends PopupWindow{
             @Override
             public void onClick(View view) {
                 DataCategory.getInstance().showAll(false);
-                refreshPopupWindow();
+                OnRefreshPopupWindow();
                 view.setBackgroundResource(R.drawable.select);
                 btnAll.setBackground(null);
             }
         });
-
-        TextView btnExit = (TextView) contentView.findViewById(R.id.exit);
-        btnExit.setOnClickListener(new TextView.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            NetProtocol.getInstance().Logout();
-            ManActivitys.getInstance().popAllActivityExceptOne();
+        myHandler = new Handler() {
+            //接收到消息后处理
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case EnumMessage.REFRESH_CATEGORY:
+                        OnRefreshPopupWindow();
+                        break;
+                }
+                super.handleMessage(msg);
             }
-        });
-
+        };
         NetProtocol.getInstance().GetCategory();
     }
 
     public void showPopupWindow(View parent) {
         if (!this.isShowing() && parent != null) {
             this.showAtLocation(parent, Gravity.LEFT, 0, 0);
+            OnRefreshPopupWindow();
         } else {
             this.dismiss();
         }
     }
 
-    public void refreshPopupWindow() {
+    public void OnRefreshPopupWindow() {
         ListView treeView = (ListView) contentView.findViewById(R.id.tree_list);
         ((TreeViewItemClickListener)treeView.getOnItemClickListener()).refreshItems();
     }

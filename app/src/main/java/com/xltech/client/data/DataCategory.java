@@ -2,7 +2,7 @@ package com.xltech.client.data;
 
 import android.app.Activity;
 
-import com.xltech.client.service.ManActivitys;
+import com.xltech.client.service.ManMessage;
 import com.xltech.client.ui.ActivityImage;
 import com.xltech.client.ui.ActivityPlayer;
 
@@ -102,13 +102,7 @@ public class DataCategory {
                     m_elementsData.add(elementLevel_2);
                 }
             }
-
-            Activity activity = ManActivitys.getInstance().currentActivity();
-            if (activity.getClass() == ActivityImage.class) {
-                ((ActivityImage)activity).RefreshPopupWindow();
-            } else if(activity.getClass() == ActivityPlayer.class) {
-                ((ActivityPlayer)activity).RefreshPopupWindow();
-            }
+            ManMessage.DispatchRefreshCategoryMessage();
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {

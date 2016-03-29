@@ -1,22 +1,25 @@
 package com.xltech.client.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.xltech.client.data.EnumMessage;
 import com.xltech.client.service.AppPlayer;
 import com.xltech.client.service.ManPictures;
-import com.xltech.client.service.ManActivitys;
-
 
 public class ActivityImage extends Activity {
     private PopupCategory mPopupWindow = null;
-    Point point = new Point();
+    private Point point = new Point();
+    public static Handler myHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +56,24 @@ public class ActivityImage extends Activity {
                 }
             }
         });
-        ManActivitys.getInstance().pushActivity(this);
+
+        myHandler = new Handler() {
+            //接收到消息后处理
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case EnumMessage.OPEN_VIDEO:
+                        OnOpenVideo();
+                        break;
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        PopupCategory.parentName = ActivityImage.class.getName();
         ManPictures.getInstance().getPictureList();
         ShowPicture();
     }
@@ -68,21 +83,18 @@ public class ActivityImage extends Activity {
         super.onPause();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ManActivitys.getInstance().popActivity(this);
     }
 
-    public void HidePopupWindow() {
+    private void OnOpenVideo() {
         if (mPopupWindow != null) {
             mPopupWindow.showPopupWindow(null);
         }
-    }
 
-    public void RefreshPopupWindow() {
-        mPopupWindow.refreshPopupWindow();
+        Intent intent = new Intent(this, ActivityPlayer.class);
+        startActivity(intent);
     }
 
     private void ShowPicture() {

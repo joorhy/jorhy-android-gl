@@ -2,24 +2,26 @@ package com.xltech.client.ui;
 
 import android.app.Activity;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.TextView;
 
 import com.xltech.client.data.DataSelectedVehicle;
+import com.xltech.client.data.EnumMessage;
 import com.xltech.client.service.AppPlayer;
 import com.xltech.client.service.GLFrameSurface;
 import com.xltech.client.service.ManPictures;
-import com.xltech.client.service.ManActivitys;
 
 /**
  * Created by JooLiu on 2016/1/13.
  */
 public class ActivityPlayer extends Activity {
-    private PopupCategory mPopupWindow = null;
-    Point point = new Point();
+    public static Handler myHandler = null;
 
+    private PopupCategory mPopupWindow = null;
+    private Point point = new Point();
     private AppPlayer playerLeft = null;
     private AppPlayer playerRight = null;
 
@@ -30,6 +32,11 @@ public class ActivityPlayer extends Activity {
 
         getWindowManager().getDefaultDisplay().getSize(point);
         mPopupWindow = new PopupCategory(getApplicationContext(), point.x);
+
+        playerLeft = new AppPlayer((GLFrameSurface) findViewById(R.id.left_glsurface),
+                AppPlayer.LEFT_PALER);
+        playerRight = new AppPlayer((GLFrameSurface) findViewById(R.id.right_glsurface),
+                AppPlayer.RIGHT_PLAYER);
 
         TextView btnMenu = (TextView)findViewById(R.id.player_menu);
         btnMenu.setOnClickListener(new TextView.OnClickListener() {
@@ -79,20 +86,36 @@ public class ActivityPlayer extends Activity {
             }
         });
 
-        ManActivitys.getInstance().pushActivity(this);
+        myHandler = new Handler() {
+            //接收到消息后处理
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case EnumMessage.CHANGE_VIDEO:
+                        OnChangeVideo();
+                        break;
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (playerLeft == null && playerRight == null) {
-            playerLeft = new AppPlayer((GLFrameSurface) findViewById(R.id.left_glsurface),
-                    AppPlayer.LEFT_PALER);
-            playerRight = new AppPlayer((GLFrameSurface) findViewById(R.id.right_glsurface),
-                    AppPlayer.RIGHT_PLAYER);
-
+        PopupCategory.parentName = ActivityPlayer.class.getName();
+        if (playerLeft != null && playerRight != null) {
             playerLeft.Play();
             playerRight.Play();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (playerLeft != null && playerRight != null) {
+            playerLeft.Stop();
+            playerRight.Stop();
         }
     }
 
@@ -100,30 +123,18 @@ public class ActivityPlayer extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (playerLeft != null && playerRight != null) {
-            playerLeft.Stop();
-            playerRight.Stop();
-
-            /*playerLeft = null;
-            playerRight = null;*/
-        }
-        ManActivitys.getInstance().popActivity(this);
+        playerLeft = null;
+        playerRight = null;
     }
 
-    public void HidePopupWindow() {
+    public void OnChangeVideo() {
         if (mPopupWindow != null) {
             mPopupWindow.showPopupWindow(null);
         }
-    }
 
-    public void Replay() {
         if (playerLeft != null && playerRight != null) {
             playerLeft.Restart();
             playerRight.Restart();
         }
-    }
-
-    public void RefreshPopupWindow() {
-        mPopupWindow.refreshPopupWindow();
     }
 }
