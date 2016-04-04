@@ -43,10 +43,10 @@ public class ActivityLogin extends Activity {
                 btnLogin.setText("登陆中...");
                 txtErrMessage.setText("");
                 EnableLogin(false);
+                myHandler.postDelayed(runnable, 5000);
                 NetProtocol.getInstance().Login("222.214.218.237", 8502,
                         txtUser.getText().toString(), txtPassword.getText().toString(),
                         cbForceSignIn.isChecked() ? 1 : 0);
-                myHandler.postDelayed(runnable, 5000);
             }
         });
 
@@ -103,14 +103,33 @@ public class ActivityLogin extends Activity {
 
     private void OnLoginReturn() {
         myHandler.removeCallbacks(runnable);
-        if (DataLogin.getInstance().getResult() == 0) {
-            Intent intent = new Intent(this, ActivityImage.class);
-            startActivity(intent);
-        } else {
-            txtErrMessage.setText(R.string.login_error);
-            btnLogin.setText(R.string.login_label_sign_in);
-            EnableLogin(true);
+        switch (DataLogin.getInstance().getResult()) {
+            case 0:
+                Intent intent = new Intent(this, ActivityImage.class);
+                startActivity(intent);
+                break;
+            case 2:
+                txtErrMessage.setText(R.string.login_re_user_pwd_error);
+                btnLogin.setText(R.string.login_label_sign_in);
+                EnableLogin(true);
+                break;
+            case 6:
+                txtErrMessage.setText(R.string.login_re_login_error);
+                btnLogin.setText(R.string.login_label_sign_in);
+                EnableLogin(true);
+                break;
+            case 10:
+                txtErrMessage.setText(R.string.login_network_error);
+                btnLogin.setText(R.string.login_label_sign_in);
+                EnableLogin(true);
+                break;
+            default:
+                txtErrMessage.setText(R.string.login_error);
+                btnLogin.setText(R.string.login_label_sign_in);
+                EnableLogin(true);
+                break;
         }
+
     }
 
     Runnable runnable = new Runnable() {

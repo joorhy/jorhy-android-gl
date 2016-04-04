@@ -1,10 +1,6 @@
 package com.xltech.client.data;
 
-import android.app.Activity;
-
 import com.xltech.client.service.ManMessage;
-import com.xltech.client.ui.ActivityImage;
-import com.xltech.client.ui.ActivityPlayer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
