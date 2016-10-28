@@ -13,6 +13,7 @@ public class AppPlayer {
     public static final String LEFT_PALER = "left_player";
     public static final String RIGHT_PLAYER = "right_player";
 
+    private PrevRecorder m_prevRecorder = null;
     private GLFrameRender m_GLFRenderer;
     private H264Decoder m_decoder = null;
 
@@ -49,6 +50,11 @@ public class AppPlayer {
         }
 
         isPlay = true;
+        if (m_prevRecorder == null) {
+            m_prevRecorder = new PrevRecorder();
+            m_prevRecorder.InitializeRecorder();
+        }
+
         if (m_decoder == null) {
             m_decoder = new H264Decoder();
             m_decoder.InitializeDecoder();
@@ -68,6 +74,11 @@ public class AppPlayer {
             NetProtocol.getInstance().StopReal(this);
             m_decoder.DeInitializeDecoder();
             m_decoder = null;
+        }
+
+        if (m_prevRecorder != null) {
+            m_prevRecorder.DeInitializeRecorder();
+            m_prevRecorder = null;
         }
 
         return true;
@@ -90,10 +101,16 @@ public class AppPlayer {
 
         StructH264Frame h264Frame = block.getH264Frame();
         if (h264Frame != null) {
+            if (m_prevRecorder != null) {
+                m_prevRecorder.InputData(h264Frame.getFrame(), h264Frame.getFrameLength(),
+                        h264Frame.isKeyFrame() ? 1 : 2);
+            }
+
             if (m_decoder != null) {
                 if (m_decoder.DecodeFrame(h264Frame.getFrame(), h264Frame.getFrameLength())) {
                     m_GLFRenderer.update(m_decoder.getWidth(), m_decoder.getHeight());
-                    m_GLFRenderer.update(m_decoder.GetYData(), m_decoder.GetUData(), m_decoder.GetVData());
+                    m_GLFRenderer.update(m_decoder.GetYData(), m_decoder.GetUData(),
+                            m_decoder.GetVData());
                 }
             }
             h264Frame.clear();

@@ -21,9 +21,10 @@ public class StructH264Frame {
     public static int PACK_COMPLETE = 0xf8;
     public static int PACK_START = 0xfd;
     public static int PACK_CONTINE = 0xff;
-    public static int PCAK_END = 0xfa;
+    public static int PACK_END = 0xfa;
 
     private static byte[] ID = new byte[]{ 0x00, 0x00, 0x00, 0x01 };
+    private static byte[] KEY_ID = new byte[]{ 0x00, 0x00, 0x00, 0x01, 0x67 };
 
     private ByteBuffer packHeader = null;
     private int packLength = 0;
@@ -43,6 +44,16 @@ public class StructH264Frame {
 
     public boolean isComplete() {
         return bComplete;
+    }
+
+    public boolean isKeyFrame() {
+        byte[] array = packHeader.array();
+        for (int i=0; i<5; i++) {
+            if (array[i] != KEY_ID[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setLength(int length) {
@@ -92,7 +103,7 @@ public class StructH264Frame {
                 frameLength += packLength;
             }
 
-            if (packType == PACK_COMPLETE || packType == PCAK_END) {
+            if (packType == PACK_COMPLETE || packType == PACK_END) {
                 bComplete = true;
             }
         } catch (IOException e) {
@@ -105,7 +116,7 @@ public class StructH264Frame {
         buffer.get(packHeader.array(), frameLength, packLength);
         frameLength += packLength;
 
-        if (packType == PACK_COMPLETE || packType == PCAK_END) {
+        if (packType == PACK_COMPLETE || packType == PACK_END) {
             bComplete = true;
         }
 
