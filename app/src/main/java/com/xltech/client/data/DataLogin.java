@@ -44,6 +44,10 @@ public class DataLogin {
         return this.nResult;
     }
 
+    public void setResult(int nResult) {
+        this.nResult = nResult;
+    }
+
     public int getBodyLen() {
         return LOGIN_LEN;
     }

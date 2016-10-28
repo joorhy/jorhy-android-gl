@@ -1,11 +1,8 @@
 package com.xltech.client.service;
 
-import android.app.Activity;
-
 import com.xltech.client.config.Configer;
 import com.xltech.client.config.ConfigTempData;
 import com.xltech.client.data.*;
-import com.xltech.client.ui.ActivityLogin;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -77,20 +74,21 @@ public class NetProtocol {
     public int Logout() {
         if (Configer.UseTemp()) {
         } else {
-            DataNull logout = new DataNull();
-            logout.setCommand(EnumProtocol.xl_logout);
-            synchronized (taskQueue) {
-                taskQueue.offer(logout);
-            }
-
             if (workThread != null) {
-                isStop = true;
-                try {
+                //isStop = true;
+                //workThread = null;
+                /*try {
                     workThread.join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
                     workThread = null;
+                }*/
+
+                DataLogout logout = new DataLogout();
+                logout.setCommand(EnumProtocol.xl_logout);
+                synchronized (taskQueue) {
+                    taskQueue.offer(logout);
                 }
             }
         }
@@ -304,14 +302,16 @@ public class NetProtocol {
                     ManMessage.DispatchRetLoginMessage();
 
                     isStop = true;
-                    workThread = null;
+                    //workThread = null;
                 } else {
                     selector = Selector.open();
                     socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                DataLogin.getInstance().setResult(10);
                 ManMessage.DispatchRetLoginMessage();
+                isStop = true;
             }
 
             try {
@@ -358,6 +358,13 @@ public class NetProtocol {
                                             EnumProtocol.xl_ctrl_start, sequenceNum++,
                                             DataLogin.getInstance().getBody(),
                                             DataLogin.getInstance().getBodyLen());
+                                } else if(task.getClass() == DataLogout.class) {
+                                    DataLogout dataLogout = (DataLogout) task;
+                                    sendData = DataProtocol.MakeRequest(dataLogout.getCommand(),
+                                            EnumProtocol.xl_ctrl_start, dataLogout.getSequence(),
+                                            null, 0);
+                                    isStop = true;
+                                    //workThread = null;
                                 } else if (task.getClass() == DataNull.class) {
                                     DataNull dataNull = (DataNull) task;
                                     sendData = DataProtocol.MakeRequest(dataNull.getCommand(),
@@ -383,6 +390,7 @@ public class NetProtocol {
                     }
                 }
             } catch(IOException e){
+                isStop = true;
                 e.printStackTrace();
             } finally {
                 isStop = true;

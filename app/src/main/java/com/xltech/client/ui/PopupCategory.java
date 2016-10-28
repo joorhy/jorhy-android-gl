@@ -24,6 +24,8 @@ import com.xltech.client.service.NetProtocol;
  */
 public class PopupCategory extends PopupWindow{
     private View contentView;
+    private TextView btnAll = null;
+    private TextView btnOnline = null;
     public static TreeViewAdapter treeViewAdapter;
     public static Handler myHandler = null;
     public static String parentName = "";
@@ -68,10 +70,10 @@ public class PopupCategory extends PopupWindow{
             }
         });
 
-        final TextView btnAll = (TextView) contentView.findViewById(R.id.list_all);
-        final TextView btnOnline = (TextView) contentView.findViewById(R.id.list_online);
+        btnAll = (TextView) contentView.findViewById(R.id.list_all);
+        btnOnline = (TextView) contentView.findViewById(R.id.list_online);
 
-        DataCategory.getInstance().showAll(true);
+        //DataCategory.getInstance().showAll(true);
         btnAll.setOnClickListener(new TextView.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
@@ -107,8 +109,16 @@ public class PopupCategory extends PopupWindow{
         NetProtocol.getInstance().GetCategory();
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void showPopupWindow(View parent) {
         if (!this.isShowing() && parent != null) {
+            if (DataCategory.getInstance().isShowAll()) {
+                btnAll.setBackgroundResource(R.drawable.select);
+                btnOnline.setBackground(null);
+            } else {
+                btnOnline.setBackgroundResource(R.drawable.select);
+                btnAll.setBackground(null);
+            }
             this.showAtLocation(parent, Gravity.LEFT, 0, 0);
             OnRefreshPopupWindow();
         } else {
